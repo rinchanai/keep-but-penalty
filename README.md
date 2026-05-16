@@ -1,19 +1,29 @@
 # Keep But Penalty
 
-Lightweight keepInventory enforcement with configurable death penalties.
+**Keep your inventory. Pay a real death penalty.**
 
-When a player dies, the mod can keep their inventory, remove part of their vanilla experience, and damage equipped items. The default settings provide a simple, repair-friendly penalty curve:
+Keep But Penalty is a lightweight NeoForge mod for packs and servers that want to avoid item drops, grave recovery loops, or corpse runs without making death free.
 
-- Enable vanilla `keepInventory` on server start.
-- Keep one third of total vanilla experience and remove two thirds.
-- Apply 80 durability damage to armor, main hand, off hand, Curios slots, and Accessories slots.
-- Allow the damage to reach max durability damage, so it pairs well with no-break mods such as Keep My Sword.
+When a player dies, the mod can keep their inventory, remove part of their vanilla experience, and damage equipped items.
+
+## Default behavior
+
+- Enables vanilla `keepInventory` when the server starts.
+- Keeps one third of total vanilla experience after death.
+- Removes two thirds of total vanilla experience after death.
+- Applies 80 durability damage to selected equipped items.
+- Includes armor, main hand, off hand, Curios slots, and Accessories slots by default.
+- Allows items to reach 0 durability, so it pairs well with no-break mods such as Keep My Sword.
 
 ## Configuration
 
-Config file: `config/keep_but_penalty-common.toml`
+Config file:
 
-Important options:
+```text
+config/keep_but_penalty-common.toml
+```
+
+Useful options:
 
 - `death.enforceKeepInventory`
 - `death.experienceKeepRatio`
