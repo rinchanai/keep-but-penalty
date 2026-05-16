@@ -1,0 +1,123 @@
+package dev.rinchan.keepinventorypenalty;
+
+import dev.rinchan.keepinventorypenalty.compat.AccessoriesCompat;
+import dev.rinchan.keepinventorypenalty.compat.CuriosCompat;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
+import net.neoforged.fml.ModList;
+
+public final class KeepInventoryPenalty {
+    public static final String MOD_ID = "keep_inventory_penalty";
+    private static final String EXPLAINED_KEY = MOD_ID + ":explained";
+    private static final Map<UUID, Integer> XP_AFTER_DEATH = new ConcurrentHashMap<>();
+
+    private KeepInventoryPenalty() {
+    }
+
+    public static void enforceKeepInventory(MinecraftServer server) {
+        if (!KeepInventoryPenaltyConfig.enforceKeepInventory.get()) {
+            return;
+        }
+        server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, server);
+    }
+
+    public static void applyDeathPenalty(ServerPlayer player) {
+        if (KeepInventoryPenaltyConfig.enableExperiencePenalty.get()) {
+            int remainingXp = (int) Math.floor(totalExperience(player) * KeepInventoryPenaltyConfig.experienceKeepRatio.get());
+            XP_AFTER_DEATH.put(player.getUUID(), Math.max(0, remainingXp));
+        }
+
+        if (KeepInventoryPenaltyConfig.enableDurabilityPenalty.get()) {
+            Set<ItemStack> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+            if (KeepInventoryPenaltyConfig.damageArmor.get()) {
+                damage(player.getItemBySlot(EquipmentSlot.HEAD), seen);
+                damage(player.getItemBySlot(EquipmentSlot.CHEST), seen);
+                damage(player.getItemBySlot(EquipmentSlot.LEGS), seen);
+                damage(player.getItemBySlot(EquipmentSlot.FEET), seen);
+            }
+            if (KeepInventoryPenaltyConfig.damageMainHand.get()) {
+                damage(player.getMainHandItem(), seen);
+            }
+            if (KeepInventoryPenaltyConfig.damageOffHand.get()) {
+                damage(player.getOffhandItem(), seen);
+            }
+            if (KeepInventoryPenaltyConfig.damageCurios.get() && ModList.get().isLoaded("curios")) {
+                CuriosCompat.damageEquipped(player, seen);
+            }
+            if (KeepInventoryPenaltyConfig.damageAccessories.get() && ModList.get().isLoaded("accessories")) {
+                AccessoriesCompat.damageEquipped(player, seen);
+            }
+        }
+    }
+
+    public static void finishRespawn(ServerPlayer player) {
+        Integer remainingXp = XP_AFTER_DEATH.remove(player.getUUID());
+        if (remainingXp != null) {
+            player.totalExperience = 0;
+            player.experienceLevel = 0;
+            player.experienceProgress = 0;
+            if (remainingXp > 0) {
+                player.giveExperiencePoints(remainingXp);
+            }
+        }
+
+        if (KeepInventoryPenaltyConfig.showFirstDeathMessage.get() && !player.getPersistentData().getBoolean(EXPLAINED_KEY)) {
+            player.getPersistentData().putBoolean(EXPLAINED_KEY, true);
+            player.displayClientMessage(Component.translatable("keep_inventory_penalty.message.first_death"), false);
+        }
+    }
+
+    public static void clearPlayer(UUID playerId) {
+        XP_AFTER_DEATH.remove(playerId);
+    }
+
+    public static void damage(ItemStack stack, Set<ItemStack> seen) {
+        if (stack == null || stack.isEmpty() || !seen.add(stack) || !stack.isDamageableItem()) {
+            return;
+        }
+        int maxDamage = stack.getMaxDamage();
+        if (maxDamage <= 0) {
+            return;
+        }
+        int limit = KeepInventoryPenaltyConfig.allowZeroDurability.get() ? maxDamage : Math.max(0, maxDamage - 1);
+        int nextDamage = Math.min(limit, stack.getDamageValue() + KeepInventoryPenaltyConfig.durabilityLoss.get());
+        stack.setDamageValue(nextDamage);
+    }
+
+    private static int totalExperience(Player player) {
+        int level = Math.max(0, player.experienceLevel);
+        float progress = Math.max(0f, Math.min(1f, player.experienceProgress));
+        return xpForLevel(level) + (int) Math.floor(progress * xpToNextLevel(level));
+    }
+
+    private static int xpForLevel(int level) {
+        if (level <= 16) {
+            return level * level + 6 * level;
+        }
+        if (level <= 31) {
+            return (int) Math.floor(2.5D * level * level - 40.5D * level + 360D);
+        }
+        return (int) Math.floor(4.5D * level * level - 162.5D * level + 2220D);
+    }
+
+    private static int xpToNextLevel(int level) {
+        if (level >= 30) {
+            return 112 + (level - 30) * 9;
+        }
+        if (level >= 15) {
+            return 37 + (level - 15) * 5;
+        }
+        return 7 + level * 2;
+    }
+}
