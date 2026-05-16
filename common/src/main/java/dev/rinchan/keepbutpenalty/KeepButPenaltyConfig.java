@@ -16,7 +16,6 @@ public final class KeepButPenaltyConfig {
     public static final ModConfigSpec.BooleanValue damageOffHand;
     public static final ModConfigSpec.BooleanValue damageCurios;
     public static final ModConfigSpec.BooleanValue damageAccessories;
-    public static final ModConfigSpec.BooleanValue showFirstDeathMessage;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -31,9 +30,6 @@ public final class KeepButPenaltyConfig {
         experienceKeepRatio = builder
             .comment("Fraction of total vanilla experience kept after death. Default 0.333333333 keeps one third and removes two thirds.")
             .defineInRange("experienceKeepRatio", 0.333333333D, 0D, 1D);
-        showFirstDeathMessage = builder
-            .comment("Show a short explanation to each player the first time this mod applies a death penalty.")
-            .define("showFirstDeathMessage", true);
         builder.pop();
 
         builder.push("durability");

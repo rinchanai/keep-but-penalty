@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -19,7 +18,6 @@ import net.neoforged.fml.ModList;
 
 public final class KeepButPenalty {
     public static final String MOD_ID = "keep_but_penalty";
-    private static final String EXPLAINED_KEY = MOD_ID + ":explained";
     private static final Map<UUID, Integer> XP_AFTER_DEATH = new ConcurrentHashMap<>();
 
     private KeepButPenalty() {
@@ -72,10 +70,6 @@ public final class KeepButPenalty {
             }
         }
 
-        if (KeepButPenaltyConfig.showFirstDeathMessage.get() && !player.getPersistentData().getBoolean(EXPLAINED_KEY)) {
-            player.getPersistentData().putBoolean(EXPLAINED_KEY, true);
-            player.displayClientMessage(Component.translatable("keep_but_penalty.message.first_death"), false);
-        }
     }
 
     public static void clearPlayer(UUID playerId) {
