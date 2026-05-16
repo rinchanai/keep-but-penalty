@@ -1,7 +1,7 @@
-package dev.rinchan.keepinventorypenalty;
+package dev.rinchan.keepbutpenalty;
 
-import dev.rinchan.keepinventorypenalty.compat.AccessoriesCompat;
-import dev.rinchan.keepinventorypenalty.compat.CuriosCompat;
+import dev.rinchan.keepbutpenalty.compat.AccessoriesCompat;
+import dev.rinchan.keepbutpenalty.compat.CuriosCompat;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -17,45 +17,45 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.neoforged.fml.ModList;
 
-public final class KeepInventoryPenalty {
-    public static final String MOD_ID = "keep_inventory_penalty";
+public final class KeepButPenalty {
+    public static final String MOD_ID = "keep_but_penalty";
     private static final String EXPLAINED_KEY = MOD_ID + ":explained";
     private static final Map<UUID, Integer> XP_AFTER_DEATH = new ConcurrentHashMap<>();
 
-    private KeepInventoryPenalty() {
+    private KeepButPenalty() {
     }
 
     public static void enforceKeepInventory(MinecraftServer server) {
-        if (!KeepInventoryPenaltyConfig.enforceKeepInventory.get()) {
+        if (!KeepButPenaltyConfig.enforceKeepInventory.get()) {
             return;
         }
         server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, server);
     }
 
     public static void applyDeathPenalty(ServerPlayer player) {
-        if (KeepInventoryPenaltyConfig.enableExperiencePenalty.get()) {
-            int remainingXp = (int) Math.floor(totalExperience(player) * KeepInventoryPenaltyConfig.experienceKeepRatio.get());
+        if (KeepButPenaltyConfig.enableExperiencePenalty.get()) {
+            int remainingXp = (int) Math.floor(totalExperience(player) * KeepButPenaltyConfig.experienceKeepRatio.get());
             XP_AFTER_DEATH.put(player.getUUID(), Math.max(0, remainingXp));
         }
 
-        if (KeepInventoryPenaltyConfig.enableDurabilityPenalty.get()) {
+        if (KeepButPenaltyConfig.enableDurabilityPenalty.get()) {
             Set<ItemStack> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-            if (KeepInventoryPenaltyConfig.damageArmor.get()) {
+            if (KeepButPenaltyConfig.damageArmor.get()) {
                 damage(player.getItemBySlot(EquipmentSlot.HEAD), seen);
                 damage(player.getItemBySlot(EquipmentSlot.CHEST), seen);
                 damage(player.getItemBySlot(EquipmentSlot.LEGS), seen);
                 damage(player.getItemBySlot(EquipmentSlot.FEET), seen);
             }
-            if (KeepInventoryPenaltyConfig.damageMainHand.get()) {
+            if (KeepButPenaltyConfig.damageMainHand.get()) {
                 damage(player.getMainHandItem(), seen);
             }
-            if (KeepInventoryPenaltyConfig.damageOffHand.get()) {
+            if (KeepButPenaltyConfig.damageOffHand.get()) {
                 damage(player.getOffhandItem(), seen);
             }
-            if (KeepInventoryPenaltyConfig.damageCurios.get() && ModList.get().isLoaded("curios")) {
+            if (KeepButPenaltyConfig.damageCurios.get() && ModList.get().isLoaded("curios")) {
                 CuriosCompat.damageEquipped(player, seen);
             }
-            if (KeepInventoryPenaltyConfig.damageAccessories.get() && ModList.get().isLoaded("accessories")) {
+            if (KeepButPenaltyConfig.damageAccessories.get() && ModList.get().isLoaded("accessories")) {
                 AccessoriesCompat.damageEquipped(player, seen);
             }
         }
@@ -72,9 +72,9 @@ public final class KeepInventoryPenalty {
             }
         }
 
-        if (KeepInventoryPenaltyConfig.showFirstDeathMessage.get() && !player.getPersistentData().getBoolean(EXPLAINED_KEY)) {
+        if (KeepButPenaltyConfig.showFirstDeathMessage.get() && !player.getPersistentData().getBoolean(EXPLAINED_KEY)) {
             player.getPersistentData().putBoolean(EXPLAINED_KEY, true);
-            player.displayClientMessage(Component.translatable("keep_inventory_penalty.message.first_death"), false);
+            player.displayClientMessage(Component.translatable("keep_but_penalty.message.first_death"), false);
         }
     }
 
@@ -90,8 +90,8 @@ public final class KeepInventoryPenalty {
         if (maxDamage <= 0) {
             return;
         }
-        int limit = KeepInventoryPenaltyConfig.allowZeroDurability.get() ? maxDamage : Math.max(0, maxDamage - 1);
-        int nextDamage = Math.min(limit, stack.getDamageValue() + KeepInventoryPenaltyConfig.durabilityLoss.get());
+        int limit = KeepButPenaltyConfig.allowZeroDurability.get() ? maxDamage : Math.max(0, maxDamage - 1);
+        int nextDamage = Math.min(limit, stack.getDamageValue() + KeepButPenaltyConfig.durabilityLoss.get());
         stack.setDamageValue(nextDamage);
     }
 

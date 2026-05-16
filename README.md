@@ -1,4 +1,4 @@
-# Keep Inventory Penalty
+# Keep But Penalty
 
 Lightweight keepInventory enforcement with configurable death penalties.
 
@@ -11,7 +11,7 @@ When a player dies, the mod can keep their inventory, remove part of their vanil
 
 ## Configuration
 
-Config file: `config/keep_inventory_penalty-common.toml`
+Config file: `config/keep_but_penalty-common.toml`
 
 Important options:
 

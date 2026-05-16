@@ -1,6 +1,6 @@
-package dev.rinchan.keepinventorypenalty.compat;
+package dev.rinchan.keepbutpenalty.compat;
 
-import dev.rinchan.keepinventorypenalty.KeepInventoryPenalty;
+import dev.rinchan.keepbutpenalty.KeepButPenalty;
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +15,7 @@ public final class CuriosCompat {
         CuriosApi.getCuriosInventory(player).ifPresent(handler -> handler.getCurios().values().forEach(stacksHandler -> {
             IDynamicStackHandler stacks = stacksHandler.getStacks();
             for (int slot = 0; slot < stacks.getSlots(); slot++) {
-                KeepInventoryPenalty.damage(stacks.getStackInSlot(slot), seen);
+                KeepButPenalty.damage(stacks.getStackInSlot(slot), seen);
             }
         }));
     }

@@ -1,8 +1,8 @@
-package dev.rinchan.keepinventorypenalty;
+package dev.rinchan.keepbutpenalty;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-public final class KeepInventoryPenaltyConfig {
+public final class KeepButPenaltyConfig {
     public static final ModConfigSpec SPEC;
 
     public static final ModConfigSpec.BooleanValue enforceKeepInventory;
@@ -66,6 +66,6 @@ public final class KeepInventoryPenaltyConfig {
         SPEC = builder.build();
     }
 
-    private KeepInventoryPenaltyConfig() {
+    private KeepButPenaltyConfig() {
     }
 }

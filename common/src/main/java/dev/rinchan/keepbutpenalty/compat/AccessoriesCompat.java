@@ -1,6 +1,6 @@
-package dev.rinchan.keepinventorypenalty.compat;
+package dev.rinchan.keepbutpenalty.compat;
 
-import dev.rinchan.keepinventorypenalty.KeepInventoryPenalty;
+import dev.rinchan.keepbutpenalty.KeepButPenalty;
 import io.wispforest.accessories.api.AccessoriesCapability;
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,7 +13,7 @@ public final class AccessoriesCompat {
     public static void damageEquipped(ServerPlayer player, Set<ItemStack> seen) {
         AccessoriesCapability.getOptionally(player).ifPresent(capability -> capability.getContainers().values().forEach(container -> {
             for (int slot = 0; slot < container.getAccessories().getContainerSize(); slot++) {
-                KeepInventoryPenalty.damage(container.getAccessories().getItem(slot), seen);
+                KeepButPenalty.damage(container.getAccessories().getItem(slot), seen);
             }
         }));
     }
