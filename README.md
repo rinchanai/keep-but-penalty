@@ -2,7 +2,7 @@
 
 Lightweight keepInventory enforcement with configurable death penalties.
 
-When a player dies, the mod can keep their inventory, remove part of their vanilla experience, and damage equipped items. The default settings match the 西瓜田 design:
+When a player dies, the mod can keep their inventory, remove part of their vanilla experience, and damage equipped items. The default settings provide a simple, repair-friendly penalty curve:
 
 - Enable vanilla `keepInventory` on server start.
 - Keep one third of total vanilla experience and remove two thirds.

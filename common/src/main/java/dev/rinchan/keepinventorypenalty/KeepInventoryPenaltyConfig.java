@@ -41,7 +41,7 @@ public final class KeepInventoryPenaltyConfig {
             .comment("Damage equipped items after death.")
             .define("enableDurabilityPenalty", true);
         durabilityLoss = builder
-            .comment("Flat durability damage applied to each selected damageable item. Default 80 matches the 西瓜田 design.")
+            .comment("Flat durability damage applied to each selected damageable item.")
             .defineInRange("durabilityLoss", 80, 0, Integer.MAX_VALUE);
         allowZeroDurability = builder
             .comment("Allow death damage to push items all the way to max damage. Pair with a no-break mod such as Keep My Sword if you want 0-durability items to remain usable as repair targets.")
