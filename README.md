@@ -8,7 +8,7 @@ When a player dies, the mod can keep their inventory, remove part of their vanil
 
 ## Default behavior
 
-- Enables vanilla `keepInventory` when the server starts.
+- Keeps player inventory on death without changing the vanilla `keepInventory` gamerule.
 - Keeps one third of total vanilla experience after death.
 - Removes two thirds of total vanilla experience after death.
 - Applies 80 durability damage to selected equipped items.
@@ -25,7 +25,7 @@ config/keep_but_penalty-common.toml
 
 Useful options:
 
-- `death.enforceKeepInventory`
+- `death.keepInventory`
 - `death.experienceKeepRatio`
 - `durability.durabilityLoss`
 - `durability.damageArmor`

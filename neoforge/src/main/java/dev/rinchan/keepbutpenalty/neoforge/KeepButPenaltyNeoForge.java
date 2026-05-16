@@ -9,26 +9,45 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 @Mod(KeepButPenalty.MOD_ID)
 public class KeepButPenaltyNeoForge {
     public KeepButPenaltyNeoForge(IEventBus modBus) {
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, KeepButPenaltyConfig.SPEC);
-        NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
+        NeoForge.EVENT_BUS.addListener(this::onLivingDrops);
+        NeoForge.EVENT_BUS.addListener(this::onLivingExperienceDrop);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerClone);
         NeoForge.EVENT_BUS.addListener(this::onPlayerRespawn);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogout);
-    }
-
-    private void onServerStarted(ServerStartedEvent event) {
-        KeepButPenalty.enforceKeepInventory(event.getServer());
     }
 
     private void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             KeepButPenalty.applyDeathPenalty(player);
+        }
+    }
+
+    private void onLivingDrops(LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && KeepButPenalty.shouldKeepInventory(player)) {
+            event.setCanceled(true);
+            event.getDrops().clear();
+        }
+    }
+
+    private void onLivingExperienceDrop(LivingExperienceDropEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && KeepButPenalty.shouldKeepInventory(player)) {
+            event.setCanceled(true);
+            event.setDroppedExperience(0);
+        }
+    }
+
+    private void onPlayerClone(PlayerEvent.Clone event) {
+        if (event.isWasDeath() && event.getEntity() instanceof ServerPlayer player) {
+            KeepButPenalty.restoreAfterClone(player);
         }
     }
 

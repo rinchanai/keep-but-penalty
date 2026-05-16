@@ -2,32 +2,27 @@ package dev.rinchan.keepbutpenalty;
 
 import dev.rinchan.keepbutpenalty.compat.AccessoriesCompat;
 import dev.rinchan.keepbutpenalty.compat.CuriosCompat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.neoforged.fml.ModList;
 
 public final class KeepButPenalty {
     public static final String MOD_ID = "keep_but_penalty";
     private static final Map<UUID, Integer> XP_AFTER_DEATH = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<ItemStack>> INVENTORY_AFTER_DEATH = new ConcurrentHashMap<>();
 
     private KeepButPenalty() {
-    }
-
-    public static void enforceKeepInventory(MinecraftServer server) {
-        if (!KeepButPenaltyConfig.enforceKeepInventory.get()) {
-            return;
-        }
-        server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, server);
     }
 
     public static void applyDeathPenalty(ServerPlayer player) {
@@ -57,6 +52,22 @@ public final class KeepButPenalty {
                 AccessoriesCompat.damageEquipped(player, seen);
             }
         }
+
+        if (KeepButPenaltyConfig.keepInventory.get()) {
+            INVENTORY_AFTER_DEATH.put(player.getUUID(), copyInventory(player.getInventory()));
+        }
+    }
+
+    public static boolean shouldKeepInventory(ServerPlayer player) {
+        return KeepButPenaltyConfig.keepInventory.get() && INVENTORY_AFTER_DEATH.containsKey(player.getUUID());
+    }
+
+    public static void restoreAfterClone(ServerPlayer newPlayer) {
+        List<ItemStack> savedInventory = INVENTORY_AFTER_DEATH.remove(newPlayer.getUUID());
+        if (savedInventory != null) {
+            restoreInventory(newPlayer.getInventory(), savedInventory);
+            newPlayer.inventoryMenu.broadcastChanges();
+        }
     }
 
     public static void finishRespawn(ServerPlayer player) {
@@ -69,11 +80,11 @@ public final class KeepButPenalty {
                 player.giveExperiencePoints(remainingXp);
             }
         }
-
     }
 
     public static void clearPlayer(UUID playerId) {
         XP_AFTER_DEATH.remove(playerId);
+        INVENTORY_AFTER_DEATH.remove(playerId);
     }
 
     public static void damage(ItemStack stack, Set<ItemStack> seen) {
@@ -87,6 +98,21 @@ public final class KeepButPenalty {
         int limit = KeepButPenaltyConfig.allowZeroDurability.get() ? maxDamage : Math.max(0, maxDamage - 1);
         int nextDamage = Math.min(limit, stack.getDamageValue() + KeepButPenaltyConfig.durabilityLoss.get());
         stack.setDamageValue(nextDamage);
+    }
+
+    private static List<ItemStack> copyInventory(Inventory inventory) {
+        List<ItemStack> copy = new ArrayList<>(inventory.getContainerSize());
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            copy.add(inventory.getItem(i).copy());
+        }
+        return copy;
+    }
+
+    private static void restoreInventory(Inventory inventory, List<ItemStack> savedInventory) {
+        int size = Math.min(inventory.getContainerSize(), savedInventory.size());
+        for (int i = 0; i < size; i++) {
+            inventory.setItem(i, savedInventory.get(i).copy());
+        }
     }
 
     private static int totalExperience(Player player) {
